@@ -1,0 +1,644 @@
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { 
+  BookOpen, 
+  Home, 
+  User, 
+  BarChart3, 
+  Play, 
+  ChevronRight, 
+  Zap, 
+  BrainCircuit, 
+  X,
+  Sparkles,
+  LayoutList,
+  GitFork,
+  ArrowRight,
+  Flame,
+  Star,
+  CheckCircle2,
+  Cpu,
+  ChevronDown
+} from 'lucide-react';
+import { create } from 'zustand';
+
+// --- STATE MANAGEMENT ---
+const useStore = create((set) => ({
+  user: {
+    id: 'u123',
+    name: 'Aryan Sharma',
+    class: '12',
+    stream: 'PCM',
+    points: 450,
+    streak: 5,
+  },
+  currentViewMode: 'path', 
+  toggleViewMode: () => set((state) => ({ 
+    currentViewMode: state.currentViewMode === 'list' ? 'path' : 'list' 
+  })),
+}));
+
+// --- EXHAUSTIVE CBSE 2025 CURRICULUM DATA (MATCHING USER LIST EXACTLY) ---
+const CURRICULUM = {
+  phy: [
+    { id: 'p1', title: 'Electric Charges and Fields', topics: [
+      {id: 'pt1', title: 'Electric charges, conservation of charge', why: 'Basic property of matter and its persistence.'},
+      {id: 'pt2', title: 'Coulomb’s law', why: 'Force calculation between point charges.'},
+      {id: 'pt3', title: 'Force between multiple charges', why: 'Superposition principle in action.'},
+      {id: 'pt4', title: 'Electric field and field lines', why: 'Visualizing electrical influence.'},
+      {id: 'pt5', title: 'Electric flux', why: 'Flow of electric field through surfaces.'},
+      {id: 'pt6', title: 'Gauss’s law', why: 'Fundamental law for flux and charge.'},
+      {id: 'pt7', title: 'Applications of Gauss’s law (sphere, cylinder, plane sheet)', why: 'Finding field for symmetric shapes.'}
+    ]},
+    { id: 'p2', title: 'Electrostatic Potential and Capacitance', topics: [
+      {id: 'pt8', title: 'Electric potential and potential difference', why: 'Energy per unit charge concept.'},
+      {id: 'pt9', title: 'Potential due to point charge, dipole, system of charges', why: 'Mathematical modeling of potential.'},
+      {id: 'pt10', title: 'Equipotential surfaces', why: 'Surfaces where potential remains constant.'},
+      {id: 'pt11', title: 'Electric potential energy', why: 'Work done to assemble charges.'},
+      {id: 'pt12', title: 'Capacitors and capacitance', why: 'Device used to store charge.'},
+      {id: 'pt13', title: 'Combination of capacitors', why: 'Series and parallel arrangements.'},
+      {id: 'pt14', title: 'Capacitance of parallel plate capacitor', why: 'The standard capacitor model.'},
+      {id: 'pt15', title: 'Effect of dielectric', why: 'How insulators boost capacitance.'},
+      {id: 'pt16', title: 'Energy stored in a capacitor', why: 'Calculating electrical energy storage.'}
+    ]},
+    { id: 'p3', title: 'Current Electricity', topics: [
+      {id: 'pt17', title: 'Electric current', why: 'Rate of flow of charge.'},
+      {id: 'pt18', title: 'Drift velocity and mobility', why: 'Electron motion inside conductors.'},
+      {id: 'pt19', title: 'Ohm’s law', why: 'V-I relationship and resistance.'},
+      {id: 'pt20', title: 'Electrical resistance', why: 'Opposition to current flow.'},
+      {id: 'pt21', title: 'V–I characteristics', why: 'Graphical analysis of materials.'},
+      {id: 'pt22', title: 'Electrical energy and power', why: 'Work done and its rate.'},
+      {id: 'pt23', title: 'Combination of resistors', why: 'Series and parallel networks.'},
+      {id: 'pt24', title: 'Kirchhoff’s laws', why: 'Rules for complex circuits.'},
+      {id: 'pt25', title: 'Wheatstone bridge', why: 'Balanced resistance bridge.'},
+      {id: 'pt26', title: 'Meter bridge', why: 'Practical app of Wheatstone bridge.'},
+      {id: 'pt27', title: 'Potentiometer and its applications', why: 'Measuring EMF and resistance.'}
+    ]},
+    { id: 'p4', title: 'Moving Charges and Magnetism', topics: [
+      {id: 'pt28', title: 'Magnetic force', why: 'Force on moving charges/currents.'},
+      {id: 'pt29', title: 'Motion in magnetic field', why: 'Helical and circular trajectories.'},
+      {id: 'pt30', title: 'Lorentz force', why: 'Combined E and B field effect.'},
+      {id: 'pt31', title: 'Biot–Savart law', why: 'Finding field from current elements.'},
+      {id: 'pt32', title: 'Magnetic field due to current', why: 'Applications of Biot-Savart.'},
+      {id: 'pt33', title: 'Ampere’s circuital law', why: 'Simplified magnetic line integrals.'},
+      {id: 'pt34', title: 'Force between parallel currents', why: 'Interaction of two wires.'},
+      {id: 'pt35', title: 'Torque on current loop', why: 'Motor effect principles.'},
+      {id: 'pt36', title: 'Moving coil galvanometer', why: 'Measuring current with magnetism.'}
+    ]},
+    { id: 'p5', title: 'Magnetism and Matter', topics: [
+      {id: 'pt37', title: 'Bar magnet', why: 'Dipole behavior of magnets.'},
+      {id: 'pt38', title: 'Magnetic field lines', why: 'Visualizing magnetic domains.'},
+      {id: 'pt39', title: 'Magnetic dipole', why: 'Smallest unit of magnetism.'},
+      {id: 'pt40', title: 'Torque on magnetic dipole', why: 'Rotation in uniform fields.'},
+      {id: 'pt41', title: 'Earth’s magnetism', why: 'Components of planet field.'},
+      {id: 'pt42', title: 'Magnetic materials', why: 'Response of matter to B fields.'},
+      {id: 'pt43', title: 'Dia-, para- and ferromagnetism', why: 'Classification of magnetic behavior.'}
+    ]},
+    { id: 'p6', title: 'Electromagnetic Induction', topics: [
+      {id: 'pt44', title: 'Magnetic flux', why: 'B field through an area.'},
+      {id: 'pt45', title: 'Faraday’s laws', why: 'Induced EMF fundamentals.'},
+      {id: 'pt46', title: 'Lenz’s law', why: 'Conservation of energy in induction.'},
+      {id: 'pt47', title: 'Induced emf', why: 'Voltage from motion/flux change.'},
+      {id: 'pt48', title: 'Self and mutual induction', why: 'Coil-induced phenomena.'},
+      {id: 'pt49', title: 'Inductors', why: 'Device storing magnetic energy.'},
+      {id: 'pt50', title: 'Energy stored in inductor', why: 'Magnetic field energy density.'}
+    ]},
+    { id: 'p7', title: 'Alternating Current', topics: [
+      {id: 'pt51', title: 'AC voltage and current', why: 'Time-varying signals.'},
+      {id: 'pt52', title: 'Peak and RMS values', why: 'Statistical measures of AC.'},
+      {id: 'pt53', title: 'AC in resistor, inductor, capacitor', why: 'Individual component response.'},
+      {id: 'pt54', title: 'LC oscillations', why: 'Exchange of energy in circuits.'},
+      {id: 'pt55', title: 'LCR series circuit', why: 'Combined impedance logic.'},
+      {id: 'pt56', title: 'Resonance', why: 'Maximum current frequency.'},
+      {id: 'pt57', title: 'Power in AC circuits', why: 'Active, reactive, and apparent power.'},
+      {id: 'pt58', title: 'Transformer', why: 'Changing voltage levels.'}
+    ]},
+    { id: 'p8', title: 'Electromagnetic Waves', topics: [
+      {id: 'pt59', title: 'Displacement current', why: 'Filling Maxwell’s gap.'},
+      {id: 'pt60', title: 'Electromagnetic wave equation', why: 'Mathematical wave propagation.'},
+      {id: 'pt61', title: 'Nature of EM waves', why: 'Transverse wave characteristics.'},
+      {id: 'pt62', title: 'EM spectrum and uses', why: 'Radio to Gamma classification.'}
+    ]},
+    { id: 'p9', title: 'Ray Optics and Optical Instruments', topics: [
+      {id: 'pt63', title: 'Reflection of light', why: 'Bouncing from mirrors.'},
+      {id: 'pt64', title: 'Spherical mirrors', why: 'Concave and convex optics.'},
+      {id: 'pt65', title: 'Refraction', why: 'Bending through mediums.'},
+      {id: 'pt66', title: 'Total internal reflection', why: 'Optical fiber principles.'},
+      {id: 'pt67', title: 'Refraction at spherical surfaces', why: 'Curved medium boundaries.'},
+      {id: 'pt68', title: 'Lenses & Lens formula', why: 'Image formation in thin lenses.'},
+      {id: 'pt69', title: 'Magnification', why: 'Size ratio of image/object.'},
+      {id: 'pt70', title: 'Optical instruments (microscope, telescope)', why: 'Enhancing human vision.'}
+    ]},
+    { id: 'p10', title: 'Wave Optics', topics: [
+      {id: 'pt71', title: 'Wavefront and Huygens’ principle', why: 'Light as a wave propagation.'},
+      {id: 'pt72', title: 'Reflection and refraction of waves', why: 'Wave-based derivations.'},
+      {id: 'pt73', title: 'Interference', why: 'Addition of light waves.'},
+      {id: 'pt74', title: 'Young’s double slit experiment', why: 'Proving wave nature.'},
+      {id: 'pt75', title: 'Diffraction', why: 'Bending around obstacles.'},
+      {id: 'pt76', title: 'Polarisation', why: 'Restricting wave oscillations.'}
+    ]},
+    { id: 'p11', title: 'Dual Nature of Radiation and Matter', topics: [
+      {id: 'pt77', title: 'Photoelectric effect', why: 'Light as a particle.'},
+      {id: 'pt78', title: 'Einstein’s photoelectric equation', why: 'Energy conservation in photons.'},
+      {id: 'pt79', title: 'Matter waves', why: 'Particles behaving like waves.'},
+      {id: 'pt80', title: 'de Broglie wavelength', why: 'Calculating wave properties of matter.'}
+    ]},
+    { id: 'p12', title: 'Atoms', topics: [
+      {id: 'pt81', title: 'Alpha particle scattering experiment', why: 'Rutherford’s discovery.'},
+      {id: 'pt82', title: 'Rutherford model', why: 'Nuclear atom theory.'},
+      {id: 'pt83', title: 'Bohr’s model', why: 'Quantized energy levels.'},
+      {id: 'pt84', title: 'Energy levels', why: 'Electron transition basics.'},
+      {id: 'pt85', title: 'Hydrogen spectrum', why: 'Spectral series analysis.'}
+    ]},
+    { id: 'p13', title: 'Nuclei', topics: [
+      {id: 'pt86', title: 'Nuclear composition', why: 'Protons and neutrons.'},
+      {id: 'pt87', title: 'Nuclear forces', why: 'Strong interaction mechanics.'},
+      {id: 'pt88', title: 'Mass defect', why: 'Lost mass into energy.'},
+      {id: 'pt89', title: 'Binding energy', why: 'Stability of the nucleus.'},
+      {id: 'pt90', title: 'Radioactivity', why: 'Unstable isotope decay.'},
+      {id: 'pt91', title: 'Nuclear fission and fusion', why: 'Energy from nuclei.'}
+    ]},
+    { id: 'p14', title: 'Semiconductor Electronics', topics: [
+      {id: 'pt92', title: 'Energy bands', why: 'Valence and conduction bands.'},
+      {id: 'pt93', title: 'Intrinsic and extrinsic semiconductors', why: 'Doping basics.'},
+      {id: 'pt94', title: 'p–n junction', why: 'The building block of electronics.'},
+      {id: 'pt95', title: 'Diode and its applications', why: 'Rectification logic.'},
+      {id: 'pt96', title: 'Zener diode', why: 'Voltage regulation.'},
+      {id: 'pt97', title: 'Transistor (basic idea)', why: 'Amplification and switching.'},
+      {id: 'pt98', title: 'Logic gates', why: 'Boolean operations in hardware.'}
+    ]}
+  ],
+  chem: [
+    { id: 'c1', title: 'Solutions', topics: [
+      {id: 'ct1', title: 'Types of solutions', why: 'Homogeneous mixtures.'},
+      {id: 'ct2', title: 'Concentration terms', why: 'Molarity, Molality, etc.'},
+      {id: 'ct3', title: 'Solubility', why: 'Factors affecting dissolving.'},
+      {id: 'ct4', title: 'Vapour pressure', why: 'Equilibrium pressure of vapor.'},
+      {id: 'ct5', title: 'Raoult’s law', why: 'VP of volatile liquids.'},
+      {id: 'ct6', title: 'Ideal and non-ideal solutions', why: 'Deviations from Raoult’s.'},
+      {id: 'ct7', title: 'Colligative properties', why: 'BP, FP, and Osmotic effects.'},
+      {id: 'ct8', title: 'Abnormal molar mass', why: 'Van\'t Hoff factor effect.'}
+    ]},
+    { id: 'c2', title: 'Electrochemistry', topics: [
+      {id: 'ct9', title: 'Electrochemical cells', why: 'Energy conversion basics.'},
+      {id: 'ct10', title: 'Galvanic and electrolytic cells', why: 'Spontaneous vs non-spontaneous.'},
+      {id: 'ct11', title: 'Electrode potential', why: 'Oxidation/reduction tendency.'},
+      {id: 'ct12', title: 'Nernst equation', why: 'Potential at non-standard conditions.'},
+      {id: 'ct13', title: 'Conductance', why: 'Resistivity and molar conductivity.'},
+      {id: 'ct14', title: 'Electrolysis', why: 'Faraday\'s laws of electrolysis.'},
+      {id: 'ct15', title: 'Batteries', why: 'Primary and secondary storage.'},
+      {id: 'ct16', title: 'Fuel cells', why: 'Hydrogen-oxygen energy.'},
+      {id: 'ct17', title: 'Corrosion', why: 'Electrochemistry of rusting.'}
+    ]},
+    { id: 'c3', title: 'Chemical Kinetics', topics: [
+      {id: 'ct18', title: 'Rate of reaction', why: 'Speed of transformation.'},
+      {id: 'ct19', title: 'Rate law', why: 'Expression of rate vs concentration.'},
+      {id: 'ct20', title: 'Order and molecularity', why: 'Reaction mechanisms.'},
+      {id: 'ct21', title: 'Integrated rate equations', why: 'Concentration vs time.'},
+      {id: 'ct22', title: 'Half-life', why: 'Time for 50% completion.'},
+      {id: 'ct23', title: 'Temperature dependence', why: 'Collision theory.'},
+      {id: 'ct24', title: 'Arrhenius equation', why: 'Calculating Ea.'}
+    ]},
+    { id: 'c4', title: 'd- and f-Block Elements', topics: [
+      {id: 'ct25', title: 'Electronic configuration', why: 'Transition element basics.'},
+      {id: 'ct26', title: 'General properties', why: 'Catalysis and color.'},
+      {id: 'ct27', title: 'Oxidation states', why: 'Variable valency.'},
+      {id: 'ct28', title: 'Lanthanoids', why: '4f series properties.'},
+      {id: 'ct29', title: 'Actinoids', why: 'Radioactive 5f series.'},
+      {id: 'ct30', title: 'Applications of d-block elements', why: 'Industrial uses.'}
+    ]},
+    { id: 'c5', title: 'Coordination Compounds', topics: [
+      {id: 'ct31', title: 'Coordination compounds', why: 'Complex salt structures.'},
+      {id: 'ct32', title: 'Nomenclature', why: 'IUPAC naming rules.'},
+      {id: 'ct33', title: 'Isomerism', why: 'Structural and stereoisomerism.'},
+      {id: 'ct34', title: 'Bonding theories', why: 'Werner and VBT.'},
+      {id: 'ct35', title: 'Crystal field theory', why: 'D-orbital splitting.'},
+      {id: 'ct36', title: 'Stability', why: 'Formation constants.'},
+      {id: 'ct37', title: 'Applications', why: 'Analytical/biological complexes.'}
+    ]},
+    { id: 'c6', title: 'Haloalkanes and Haloarenes', topics: [
+      {id: 'ct38', title: 'Classification', why: 'Primary, secondary, tertiary.'},
+      {id: 'ct39', title: 'Nomenclature', why: 'Organic naming.'},
+      {id: 'ct40', title: 'Nature of C–X bond', why: 'Polarity and reactivity.'},
+      {id: 'ct41', title: 'Preparation', why: 'Methods of synthesis.'},
+      {id: 'ct42', title: 'Physical properties', why: 'MP/BP trends.'},
+      {id: 'ct43', title: 'Chemical reactions', why: 'Substitution/Elimination.'},
+      {id: 'ct44', title: 'Uses and environmental effects', why: 'CFCs and pesticides.'}
+    ]},
+    { id: 'c7', title: 'Alcohols, Phenols and Ethers', topics: [
+      {id: 'ct45', title: 'Classification', why: 'Oxygen-linked organic types.'},
+      {id: 'ct46', title: 'Nomenclature', why: 'Naming oxygen compounds.'},
+      {id: 'ct47', title: 'Preparation', why: 'Industrial/Lab routes.'},
+      {id: 'ct48', title: 'Physical properties', why: 'Hydrogen bonding.'},
+      {id: 'ct49', title: 'Chemical reactions', why: 'Acidity and dehydration.'},
+      {id: 'ct50', title: 'Uses', why: 'Solvents and products.'}
+    ]},
+    { id: 'c8', title: 'Aldehydes, Ketones and Carboxylic Acids', topics: [
+      {id: 'ct51', title: 'Nomenclature', why: 'Naming carbonyls.'},
+      {id: 'ct52', title: 'Preparation', why: 'Routes for -CHO and -CO.'},
+      {id: 'ct53', title: 'Physical properties', why: 'Dipole-dipole interaction.'},
+      {id: 'ct54', title: 'Chemical reactions', why: 'Nucleophilic addition.'},
+      {id: 'ct55', title: 'Uses', why: 'Formalin and acids.'}
+    ]},
+    { id: 'c9', title: 'Amines', topics: [
+      {id: 'ct56', title: 'Classification', why: 'Ammonia derivatives.'},
+      {id: 'ct57', title: 'Nomenclature', why: 'Naming amines.'},
+      {id: 'ct58', title: 'Preparation', why: 'Gabriel Phthalimide, etc.'},
+      {id: 'ct59', title: 'Physical properties', why: 'Basic character.'},
+      {id: 'ct60', title: 'Chemical reactions', why: 'Acylation and carbylamine.'},
+      {id: 'ct61', title: 'Uses', why: 'Dyes and polymers.'}
+    ]},
+    { id: 'c10', title: 'Biomolecules', topics: [
+      {id: 'ct62', title: 'Carbohydrates', why: 'Sugars and starch.'},
+      {id: 'ct63', title: 'Proteins', why: 'Amino acid chains.'},
+      {id: 'ct64', title: 'Enzymes', why: 'Biological catalysts.'},
+      {id: 'ct65', title: 'Vitamins', why: 'Essential micronutrients.'},
+      {id: 'ct66', title: 'Nucleic acids', why: 'DNA and RNA basics.'}
+    ]}
+  ],
+  math: [
+    { id: 'm1', title: 'Relations and Functions', topics: [
+      {id: 'mt1', title: 'Relations', why: 'Connections between sets.'},
+      {id: 'mt2', title: 'Types of relations', why: 'Reflexive, Symmetric, Transitive.'},
+      {id: 'mt3', title: 'Functions', why: 'Unique mappings.'},
+      {id: 'mt4', title: 'Types of functions', why: '1-1 and Onto.'},
+      {id: 'mt5', title: 'Composition of functions', why: 'Function of a function.'},
+      {id: 'mt6', title: 'Invertible functions', why: 'Reverse mappings.'}
+    ]},
+    { id: 'm2', title: 'Inverse Trigonometric Functions', topics: [
+      {id: 'mt7', title: 'Definition', why: 'Basic ITF concept.'},
+      {id: 'mt8', title: 'Properties', why: 'Calculus tools for ITF.'},
+      {id: 'mt9', title: 'Principal values', why: 'The main branch.'},
+      {id: 'mt10', title: 'Graphs', why: 'Visualizing ITF ranges.'}
+    ]},
+    { id: 'm3', title: 'Matrices', topics: [
+      {id: 'mt11', title: 'Types of matrices', why: 'Identity, scalar, etc.'},
+      {id: 'mt12', title: 'Matrix operations', why: 'Sum, product rules.'},
+      {id: 'mt13', title: 'Transpose', why: 'Row-column swap.'},
+      {id: 'mt14', title: 'Symmetric and skew symmetric matrices', why: 'Self-transpose types.'},
+      {id: 'mt15', title: 'Elementary row operations', why: 'Transforming matrices.'},
+      {id: 'mt16', title: 'Inverse of matrix', why: 'A^-1 calculation.'}
+    ]},
+    { id: 'm4', title: 'Determinants', topics: [
+      {id: 'mt17', title: 'Determinant of matrix', why: 'The scalar value.'},
+      {id: 'mt18', title: 'Properties', why: 'Row/col manipulation.'},
+      {id: 'mt19', title: 'Minors and cofactors', why: 'Determinant components.'},
+      {id: 'mt20', title: 'Adjoint', why: 'Cofactor transpose.'},
+      {id: 'mt21', title: 'Inverse', why: 'Adjoint/Determinant method.'},
+      {id: 'mt22', title: 'Applications in solving equations', why: 'Cramer’s rule.'}
+    ]},
+    { id: 'm5', title: 'Continuity and Differentiability', topics: [
+      {id: 'mt23', title: 'Continuity', why: 'Limit existence.'},
+      {id: 'mt24', title: 'Differentiability', why: 'Smoothness of curves.'},
+      {id: 'mt25', title: 'Derivatives of functions', why: 'Standard formulas.'},
+      {id: 'mt26', title: 'Chain rule', why: 'Composite differentiation.'},
+      {id: 'mt27', title: 'Logarithmic differentiation', why: 'Variable power variable.'}
+    ]},
+    { id: 'm6', title: 'Applications of Derivatives', topics: [
+      {id: 'mt28', title: 'Rate of change', why: 'dy/dx in reality.'},
+      {id: 'mt29', title: 'Increasing and decreasing functions', why: 'Monotonicity.'},
+      {id: 'mt30', title: 'Maxima and minima', why: 'Optimization.'},
+      {id: 'mt31', title: 'Tangents and normals', why: 'Geometric lines.'}
+    ]},
+    { id: 'm7', title: 'Integrals', topics: [
+      {id: 'mt32', title: 'Integration as inverse of differentiation', why: 'Antiderivatives.'},
+      {id: 'mt33', title: 'Standard integrals', why: 'Common formulas.'},
+      {id: 'mt34', title: 'Methods of integration', why: 'Substitution, parts, fractions.'},
+      {id: 'mt35', title: 'Definite integrals', why: 'Area calculation.'},
+      {id: 'mt36', title: 'Properties of definite integrals', why: 'P1-P7 rules.'}
+    ]},
+    { id: 'm8', title: 'Applications of Integrals', topics: [
+      {id: 'mt37', title: 'Area under curves', why: 'Integration geometry.'},
+      {id: 'mt38', title: 'Area between curves', why: 'Bounded regions.'}
+    ]},
+    { id: 'm9', title: 'Differential Equations', topics: [
+      {id: 'mt39', title: 'Order and degree', why: 'DE classification.'},
+      {id: 'mt40', title: 'Formation of differential equations', why: 'Eliminating constants.'},
+      {id: 'mt41', title: 'Solution methods', why: 'Variable separable, linear.'},
+      {id: 'mt42', title: 'Applications', why: 'Growth and decay.'}
+    ]},
+    { id: 'm10', title: 'Vector Algebra', topics: [
+      {id: 'mt43', title: 'Vectors', why: 'Direction and magnitude.'},
+      {id: 'mt44', title: 'Vector operations', why: 'Addition and scaling.'},
+      {id: 'mt45', title: 'Scalar and vector products', why: 'Dot and cross products.'},
+      {id: 'mt46', title: 'Applications', why: 'Work and torque.'}
+    ]},
+    { id: 'm11', title: 'Three-Dimensional Geometry', topics: [
+      {id: 'mt47', title: 'Direction cosines and ratios', why: 'Line orientation.'},
+      {id: 'mt48', title: 'Equation of line', why: '3D linear models.'},
+      {id: 'mt49', title: 'Equation of plane', why: '3D surface models.'},
+      {id: 'mt50', title: 'Distance formulas', why: 'Spatial geometry.'},
+      {id: 'mt51', title: 'Angle between lines and planes', why: 'Vector orientation.'}
+    ]},
+    { id: 'm12', title: 'Linear Programming', topics: [
+      {id: 'mt52', title: 'Linear programming problems', why: 'Constraint optimization.'},
+      {id: 'mt53', title: 'Graphical method', why: 'Solving LPP visually.'},
+      {id: 'mt54', title: 'Feasible region', why: 'Valid solution space.'},
+      {id: 'mt55', title: 'Optimal solution', why: 'Best result.'}
+    ]},
+    { id: 'm13', title: 'Probability', topics: [
+      {id: 'mt56', title: 'Conditional probability', why: 'Dependent events.'},
+      {id: 'mt57', title: 'Bayes’ theorem', why: 'Inverse probability.'},
+      {id: 'mt58', title: 'Random variables', why: 'Quantifying outcomes.'},
+      {id: 'mt59', title: 'Probability distributions', why: 'Binomial basics.'},
+      {id: 'mt60', title: 'Mean and variance', why: 'Expectation and spread.'}
+    ]}
+  ]
+};
+
+const SUBJECTS = [
+  { id: 'phy', name: 'Physics', icon: <Zap size={18} />, color: 'text-blue-400', bgColor: 'bg-blue-500/10' },
+  { id: 'chem', name: 'Chemistry', icon: <BrainCircuit size={18} />, color: 'text-emerald-400', bgColor: 'bg-emerald-500/10' },
+  { id: 'math', name: 'Mathematics', icon: <BarChart3 size={18} />, color: 'text-rose-400', bgColor: 'bg-rose-500/10' },
+];
+
+const PathNode = ({ topic, index, isCompleted, onSelect }) => {
+  const offset = index % 4;
+  const positions = ['ml-0', 'ml-20 md:ml-40', 'ml-0', 'mr-20 md:mr-40'];
+  const alignment = positions[offset];
+
+  return (
+    <div className={`flex flex-col items-center relative z-10 ${alignment} py-12`}>
+      <div className="relative group">
+        <button 
+          onClick={() => onSelect(topic)}
+          className="relative w-20 h-20 md:w-24 md:h-24 transition-transform active:translate-y-2 active:scale-95"
+          style={{ perspective: '1000px' }}
+        >
+          <div className="absolute inset-0 rounded-full translate-y-3 blur-md bg-black/40" />
+          <div className={`absolute inset-0 rounded-full translate-y-2.5 ${isCompleted ? 'bg-purple-800' : 'bg-slate-800'}`} />
+          <div className={`absolute inset-0 rounded-full border-b-[6px] flex items-center justify-center transition-all
+            ${isCompleted 
+              ? 'bg-purple-600 border-purple-400 text-white shadow-lg' 
+              : 'bg-slate-700 border-slate-600 text-slate-400 group-hover:bg-slate-600 group-hover:border-slate-500'}
+          `}>
+            {isCompleted ? <CheckCircle2 size={32} /> : <Play size={28} className="ml-1" />}
+          </div>
+        </button>
+        <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900 border border-slate-800 px-4 py-1.5 rounded-full shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
+          <span className="text-white text-[10px] font-black uppercase tracking-widest">{topic.title}</span>
+        </div>
+      </div>
+      <span className="mt-4 text-[9px] font-black text-slate-500 uppercase tracking-tighter md:hidden max-w-[120px] text-center leading-tight">
+        {topic.title}
+      </span>
+    </div>
+  );
+};
+
+const PathLab = ({ chapters, onSelectTopic }) => {
+  return (
+    <div className="relative pt-8 pb-40 flex flex-col items-center min-h-screen">
+      {/* Dynamic Connector Line */}
+      <div className="absolute top-0 bottom-0 w-2 left-1/2 -translate-x-1/2 z-0">
+        <div className="h-full w-full bg-gradient-to-b from-purple-500/20 via-slate-800/20 to-slate-900/50 rounded-full" />
+      </div>
+      
+      {chapters.map((chapter, chapterIdx) => (
+        <div key={chapter.id} className="w-full flex flex-col items-center">
+          <div className="sticky top-[138px] z-40 w-full mb-10">
+            <div className="max-w-4xl mx-auto px-4">
+              <div className="bg-slate-900/95 backdrop-blur-md border border-slate-800 rounded-2xl md:rounded-[2rem] p-4 md:p-6 flex items-center justify-between shadow-2xl shadow-black/50">
+                <div className="flex items-center gap-4 md:gap-6">
+                  <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-purple-600 flex items-center justify-center text-white font-black text-sm md:text-xl shadow-lg">
+                    {chapterIdx + 1}
+                  </div>
+                  <div>
+                    <h3 className="text-sm md:text-2xl font-black text-white uppercase tracking-tight md:tracking-tighter">
+                      {chapter.title}
+                    </h3>
+                    <p className="text-[8px] md:text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
+                      {chapter.topics.length} Key Topics
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="w-full flex flex-col items-center">
+            {chapter.topics.map((topic, idx) => (
+              <PathNode 
+                key={topic.id} 
+                topic={topic} 
+                index={idx} 
+                isCompleted={false} 
+                onSelect={onSelectTopic} 
+              />
+            ))}
+          </div>
+          <div className="h-20" />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const LearnHub = ({ onSelectTopic, onBackToHome }) => {
+  const { currentViewMode, toggleViewMode } = useStore();
+  const [selectedSubId, setSelectedSubId] = useState('phy');
+  const chapters = CURRICULUM[selectedSubId] || [];
+
+  return (
+    <div className="min-h-screen pb-24 md:pl-20 bg-slate-950">
+      <div className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+             <button onClick={onBackToHome} className="p-2.5 bg-slate-900 rounded-xl text-slate-400 hover:text-white border border-slate-800">
+               <X size={18} />
+             </button>
+             <div>
+               <h1 className="text-lg font-black text-white uppercase tracking-tight">Academic Map</h1>
+               <p className="text-[9px] text-purple-500 font-bold uppercase tracking-widest">{SUBJECTS.find(s => s.id === selectedSubId)?.name} (Full Syllabus)</p>
+             </div>
+          </div>
+
+          <button 
+            onClick={toggleViewMode}
+            className="flex items-center gap-3 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 shadow-xl"
+          >
+            <div className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all ${currentViewMode === 'path' ? 'bg-purple-600 text-white shadow-lg' : 'text-slate-500'}`}>
+              <GitFork size={14} />
+              <span className="text-[10px] font-black uppercase tracking-wider hidden sm:inline">Path</span>
+            </div>
+            <div className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all ${currentViewMode === 'list' ? 'bg-purple-600 text-white shadow-lg' : 'text-slate-500'}`}>
+              <LayoutList size={14} />
+              <span className="text-[10px] font-black uppercase tracking-wider hidden sm:inline">Grid</span>
+            </div>
+          </button>
+        </div>
+
+        <div className="max-w-5xl mx-auto px-6 flex gap-8 overflow-x-auto no-scrollbar border-t border-slate-900">
+          {SUBJECTS.map(sub => (
+            <button 
+              key={sub.id}
+              onClick={() => setSelectedSubId(sub.id)}
+              className={`py-4 flex items-center gap-3 border-b-4 transition-all whitespace-nowrap ${selectedSubId === sub.id ? 'border-purple-500 text-purple-400' : 'border-transparent text-slate-600 hover:text-slate-300'}`}
+            >
+              {sub.icon}
+              <span className="text-[11px] font-black uppercase tracking-[0.1em]">{sub.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <main className="max-w-5xl mx-auto px-6">
+        {currentViewMode === 'path' ? (
+          <PathLab chapters={chapters} onSelectTopic={onSelectTopic} />
+        ) : (
+          <div className="py-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+            {chapters.map(ch => (
+              <div key={ch.id} className="bg-slate-900/50 p-8 rounded-[2rem] border border-slate-800">
+                <h2 className="text-white text-lg font-black uppercase tracking-widest mb-6 flex items-center gap-3">
+                  <span className="text-purple-500">#</span> {ch.title}
+                </h2>
+                <div className="grid gap-3">
+                  {ch.topics.map(t => (
+                    <button key={t.id} onClick={() => onSelectTopic(t)} className="bg-slate-900 p-5 rounded-xl border border-slate-800 flex items-center justify-between group hover:border-purple-500/50 transition-all text-left">
+                      <span className="font-bold text-slate-300 group-hover:text-white leading-tight">{t.title}</span>
+                      <ChevronRight className="text-slate-700 group-hover:text-purple-500 shrink-0" size={18} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+};
+
+const TopicView = ({ topic, onBack }) => (
+  <div className="min-h-screen bg-slate-950 animate-in slide-in-from-bottom-4 duration-500">
+    <header className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950/50 backdrop-blur-md sticky top-0 z-50">
+       <div className="flex items-center gap-4">
+          <button onClick={onBack} className="p-3 bg-slate-900 rounded-xl border border-slate-800 hover:bg-slate-800 transition-colors"><X size={18} /></button>
+          <h1 className="text-xl font-black text-white tracking-tight uppercase">{topic.title}</h1>
+       </div>
+    </header>
+    <div className="p-8 max-w-4xl mx-auto space-y-12 text-center flex flex-col items-center">
+       <div className="aspect-video w-full max-w-3xl bg-slate-900 rounded-[3rem] border border-slate-800 flex items-center justify-center relative overflow-hidden group">
+          <div className="absolute inset-0 bg-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Play fill="white" size={60} className="relative z-10 transition-transform group-hover:scale-110" />
+       </div>
+       <div className="space-y-4">
+         <p className="text-4xl text-slate-200 font-black italic tracking-tighter">" {topic.why} "</p>
+         <div className="h-1 w-24 bg-purple-600 mx-auto rounded-full" />
+       </div>
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full pt-12">
+          <div className="p-6 bg-slate-900/50 border border-slate-800 rounded-2xl text-left">
+            <h4 className="text-purple-500 font-black text-xs uppercase tracking-widest mb-2">Learning Goal</h4>
+            <p className="text-slate-400 text-sm">Master the fundamental principles of {topic.title} through visualization and practice.</p>
+          </div>
+          <div className="p-6 bg-slate-900/50 border border-slate-800 rounded-2xl text-left">
+            <h4 className="text-emerald-500 font-black text-xs uppercase tracking-widest mb-2">Exam Importance</h4>
+            <p className="text-slate-400 text-sm">High weightage topic for CBSE 2025 Board Examination.</p>
+          </div>
+       </div>
+    </div>
+  </div>
+);
+
+const Dashboard = ({ onSelectSubject }) => {
+  const { user } = useStore();
+  return (
+    <div className="p-8 max-w-5xl mx-auto pb-32 md:pl-28 space-y-16">
+      <header className="flex justify-between items-end">
+        <div>
+          <h1 className="text-5xl font-black text-white tracking-tighter">Hi, {user.name}</h1>
+          <p className="text-slate-500 font-bold uppercase text-[11px] tracking-[0.4em] mt-4">Class {user.class} • CBSE 2025 Prep</p>
+        </div>
+        <div className="w-16 h-16 rounded-[1.5rem] bg-slate-900 border-2 border-slate-800 flex items-center justify-center font-black text-white text-2xl shadow-xl shadow-purple-500/10">
+          {user.name[0]}
+        </div>
+      </header>
+
+      <section>
+        <div className="flex items-center justify-between mb-10">
+          <h2 className="text-3xl font-black text-white tracking-tight flex items-center gap-4">
+            <BookOpen className="text-purple-500" size={32} /> Subject Hub
+          </h2>
+          <div className="flex items-center gap-2 bg-slate-900 px-4 py-2 rounded-full border border-slate-800">
+            <Flame size={16} className="text-orange-500" />
+            <span className="text-[10px] font-black uppercase text-white tracking-widest">{user.streak} Day Streak</span>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {SUBJECTS.map(sub => (
+            <button 
+              key={sub.id}
+              onClick={() => onSelectSubject(sub.id)}
+              className="group bg-slate-900 hover:bg-slate-800 p-10 rounded-[3rem] border border-slate-800 hover:border-purple-500/50 transition-all text-left flex flex-col justify-between h-64 relative overflow-hidden"
+            >
+              <div className="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/5 rounded-full blur-2xl group-hover:bg-purple-500/10 transition-all" />
+              <div className={`w-16 h-16 rounded-2xl ${sub.bgColor} ${sub.color} flex items-center justify-center shadow-lg`}>{sub.icon}</div>
+              <div className="flex flex-col mt-auto">
+                <p className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] mb-2">Subject</p>
+                <div className="flex items-center justify-between">
+                  <span className="font-black text-white text-2xl uppercase tracking-tighter">{sub.name}</span>
+                  <ArrowRight size={24} className="text-slate-700 group-hover:text-purple-500 group-hover:translate-x-2 transition-all" />
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+};
+
+const Navbar = ({ activeTab, setActiveTab }) => (
+  <nav className="fixed bottom-0 left-0 right-0 bg-slate-950/90 backdrop-blur-2xl border-t border-slate-800 md:top-0 md:bottom-auto md:h-screen md:w-20 md:flex-col flex z-[60]">
+    <div className="hidden md:flex items-center justify-center h-24 border-b border-slate-900">
+      <div className="w-12 h-12 bg-purple-600 rounded-2xl flex items-center justify-center font-black text-white text-xs shadow-lg shadow-purple-500/20">V1</div>
+    </div>
+    <div className="flex flex-1 justify-around md:flex-col md:justify-center md:gap-14 items-center p-4">
+      <NavItem icon={<Home />} active={activeTab === 'home'} onClick={() => setActiveTab('home')} />
+      <NavItem icon={<BookOpen />} active={activeTab === 'learn'} onClick={() => setActiveTab('learn')} />
+      <NavItem icon={<BarChart3 />} active={activeTab === 'stats'} onClick={() => setActiveTab('stats')} />
+      <NavItem icon={<User />} active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} />
+    </div>
+  </nav>
+);
+
+const NavItem = ({ icon, active, onClick }) => (
+  <button 
+    onClick={onClick}
+    className={`p-4 rounded-2xl transition-all relative group ${active ? 'bg-purple-600 text-white shadow-2xl scale-110' : 'text-slate-600 hover:text-slate-300'}`}
+  >
+    {React.cloneElement(icon, { size: 24, strokeWidth: active ? 3 : 2 })}
+    {active && <div className="absolute -inset-1 bg-purple-500/20 rounded-2xl blur-lg -z-10" />}
+  </button>
+);
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState('home');
+  const [selectedTopic, setSelectedTopic] = useState(null);
+  const [selectedSubject, setSelectedSubject] = useState(null);
+
+  const renderContent = () => {
+    if (selectedTopic) return <TopicView topic={selectedTopic} onBack={() => setSelectedTopic(null)} />;
+    if (selectedSubject) return <LearnHub onSelectTopic={setSelectedTopic} onBackToHome={() => setSelectedSubject(null)} />;
+    
+    return (
+      <div className="min-h-screen">
+        <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+        {activeTab === 'home' && <Dashboard onSelectSubject={(id) => { setSelectedSubject(id); setActiveTab('learn'); }} />}
+        {activeTab === 'learn' && <LearnHub onSelectTopic={setSelectedTopic} onBackToHome={() => setActiveTab('home')} />}
+        {['stats', 'profile'].includes(activeTab) && (
+          <div className="p-40 text-center flex flex-col items-center justify-center h-screen md:pl-28">
+            <Cpu size={80} className="text-slate-900 mb-8 animate-pulse" />
+            <div className="text-slate-700 font-black uppercase tracking-[0.8em] text-sm">Modules Locked</div>
+            <p className="text-slate-800 font-bold uppercase text-[10px] tracking-widest mt-4">Complete your first chapter to unlock</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-purple-500/30 scroll-smooth">
+      {renderContent()}
+    </div>
+  );
+}
